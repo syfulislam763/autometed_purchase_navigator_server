@@ -23,8 +23,6 @@ port = os.getenv("DB_PORT")
 database = os.getenv("DB_NAME")
 dialogflow_config = os.getenv("DIALOGFLOW_CONFIG")
 
-print(dialogflow_config)
-
 
 DATABASE_URL = f"mysql+pymysql://{username}:{password}@{host}:{port}/{database}"
 

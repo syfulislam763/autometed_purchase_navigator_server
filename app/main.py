@@ -47,7 +47,7 @@ dialogflow_config = {
 
 
 SERVICE_ACCOUNT_FILE = json_file_path
-print(SERVICE_ACCOUNT_FILE)
+
 # Initialize Dialogflow session client
 SESSION_CLIENT = dialogflow.SessionsClient.from_service_account_json(SERVICE_ACCOUNT_FILE)
 
