@@ -15,6 +15,7 @@ import os
 import json
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from fastapi.responses import RedirectResponse
 
 
 load_dotenv()
@@ -24,7 +25,17 @@ current_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 json_file_path = f"{current_directory}/dialogflow_config.json"
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Food Order Assistant",
+    description=""" "Food Order Assistant" is only responsible for the customer's order placement.\n\nUsage:\n- Signin if you have account otherwise create an account then signin for order placement. \n- After signin a session id will be provided that needs to use in every request. If the session is expired you have to login again. \n- You may start the conversation with any greeting words. \n\nApplication Features: \n- Submit an order \n- Track order status by id \n- Shows available items \n\n Technologies: \n- FastAPI, Python \n- Google DialogFlow \n- MySQL database""",
+    version="1.0.0",
+    openapi_tags=[
+        {
+            "name": "API",
+            "description": "All operations"
+        }
+    ]
+)
 
 
 DIALOGFLOW_PROJECT_ID = os.getenv("PROJECT_ID")
@@ -70,8 +81,11 @@ in_process_order = {
 
 }
 
+@app.get("/", include_in_schema=False, tags=["API"])
+async def redirect_to_docs():
+    return RedirectResponse(url="/docs")
 
-@app.post("/login")
+@app.post("/login", name="signin", tags=["API"])
 async def login(user:LoginUser, db:Session=Depends(get_db)):
     logged_in_user = get_user(dict(user), db)
     if logged_in_user:
@@ -88,7 +102,7 @@ async def login(user:LoginUser, db:Session=Depends(get_db)):
         return{"message": "Login was not successful, Your password or username invalid!"}
 
 
-@app.post("/create_user/")
+@app.post("/create_user/", name="signup", tags=["API"])
 async def create_user(user:CreateUser, db:Session=Depends(get_db)):
     try:
         
@@ -107,7 +121,7 @@ async def create_user(user:CreateUser, db:Session=Depends(get_db)):
     except Exception as e:
         pprint({"create user error": e})
 
-@app.post("/chatbot/")
+@app.post("/chatbot/", name="start conversation", tags=["API"])
 async def chatbot_interaction(request: ChatRequest, current_user:dict = Depends(get_current_user), db:Session=Depends(get_db)):
     try:
         session_id = current_user['session_id']
@@ -152,7 +166,7 @@ async def chatbot_interaction(request: ChatRequest, current_user:dict = Depends(
 
 
 
-@app.get("/foodItems")
+@app.get("/foodItems", name="All food items", tags=["API"])
 async def home (current_user:dict = Depends(get_current_user), db:Session = Depends(get_db)):
     try:
 
